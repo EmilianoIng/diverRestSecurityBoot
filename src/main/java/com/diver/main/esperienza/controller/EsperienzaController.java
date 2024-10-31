@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.text.ParseException;
 import java.util.List;
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

@@ -3,12 +3,12 @@ package com.diver.main.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -26,7 +26,7 @@ public class Viaggio {
 	private LocalDateTime lastUpdate;
 	@OneToMany(mappedBy ="viaggio" )
 	private List <Esperienza> esperienze;
-	private Boolean demo;
+	private Integer demo;
 	public Integer getId() {
 		return id;
 	}
@@ -45,10 +45,10 @@ public class Viaggio {
 	public void setEsperienze(List<Esperienza> esperienze) {
 		this.esperienze = esperienze;
 	}
-	public Boolean getDemo() {
+	public Integer getDemo() {
 		return demo;
 	}
-	public void setDemo(Boolean demo) {
+	public void setDemo(Integer demo) {
 		this.demo = demo;
 	}
 	@Override

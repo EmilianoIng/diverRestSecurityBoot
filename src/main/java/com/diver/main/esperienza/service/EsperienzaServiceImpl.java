@@ -119,8 +119,8 @@ EsperienzaDaoInterface espDao;
 		immOut.setNameViaggioGita("New Travel");
 		immOut.setNameEsperienza("New Travel");
 		immOut.setPathImage(i.getPathImage());
-		immOut.setVertical(i.isVertical());
-		immOut.setMainImage(i.isMainImage());
+		immOut.setVertical(i.isVertical()==1?true:false);
+		immOut.setMainImage(i.isMainImage()==1?true:false);
 		immOut.setDemo(true);
 		
 		list.add(0,immOut);
@@ -136,10 +136,10 @@ EsperienzaDaoInterface espDao;
 			imm.setNameEsperienza((String)result[1]);
 			imm.setPathImage((String)result[2]);
 			imm.setId((Integer)result[3]);
-			imm.setMainImage((Boolean)result[4]);
-			imm.setVertical((Boolean)result[5]);
-			imm.setExperienceImage((Boolean)result[6]);
-			imm.setDemo((Boolean)result[7]);
+			imm.setMainImage((Integer)result[4]==1?true:false);
+			imm.setVertical((Integer)result[5]==1?true:false);
+			imm.setExperienceImage((Integer)result[6]==1?true:false);
+			imm.setDemo((Integer)result[7]==1?true:false);
 			imm.setIdViaggio((Integer)result[8]);
 			imm.setIdEsperienza((Integer)result[9]);
 			System.out.println(" dimensione result "+result.length+" viaggio nome "+result[0]+" esperienza nome "+result[1]+" video nome"+result[2]+" video thumbnail "+result[3]+" video youtube "+result[4]+" video descrizione "+result[5]+" ExperienceImage "+result[6]);
@@ -157,10 +157,10 @@ EsperienzaDaoInterface espDao;
 			imm.setNameEsperienza((String)result[7]);
 			imm.setPathImage((String)result[1]);
 			imm.setId((Integer)result[2]);
-			imm.setVertical((Boolean)result[3]);
-			imm.setExperienceImage((Boolean)result[4]);
+			imm.setVertical((Integer)result[3]==1?true:false);
+			imm.setExperienceImage((Integer)result[4]==1?true:false);
 			imm.setIdEsperienza((Integer)result[5]);
-			imm.setDemo((Boolean)result[6]);
+			imm.setDemo((Integer)result[6]==1?true:false);
 			imm.setNameEsperienza(imm.getNameEsperienza()+" - "+(String)result[0]);
 			//System.out.println(" dimensione result "+result.length+" viaggio nome "+result[0]+" esperienza nome "+result[1]+" video nome"+result[2]+" video thumbnail "+result[3]+" video youtube "+result[4]+" video descrizione "+result[5]+" ExperienceImage "+result[6]);
 			outImm.add(imm);
@@ -178,12 +178,12 @@ EsperienzaDaoInterface espDao;
 			expDetail.setNameEsperienza((String)result[0]);
 			expDetail.setPathImage((String)result[1]);
 			expDetail.setId((Integer)result[2]);
-			expDetail.setMainImage((Boolean)result[3]);
-			expDetail.setVertical((Boolean)result[4]);
-			expDetail.setExperienceImage((Boolean)result[5]);
+			expDetail.setMainImage((Integer)result[3]==1?true:false);
+			expDetail.setVertical((Integer)result[4]==1?true:false);
+			expDetail.setExperienceImage((Integer)result[5]==1?true:false);
 			expDetail.setDescrizione((String)result[6]);
 			expDetail.setIdEsperienza((Integer)result[7]);
-			expDetail.setDemo((Boolean)result[8]);
+			expDetail.setDemo((Integer)result[8]==1?true:false);
 			expDetail.setData((Date) result[9]);
 			System.out.println(" dimensione result "+result.length+" viaggio nome "+result[0]+" esperienza nome "+result[1]+" video nome"+result[2]+" video thumbnail "+result[3]+" video youtube "+result[4]+" video descrizione "+result[5]+" ExperienceImage "+result[6]+" ExperienceDate "+result[9]);
 			outExp.add(expDetail);
@@ -240,7 +240,7 @@ EsperienzaDaoInterface espDao;
         Viaggio v=new Viaggio();
         int idViaggio,idExperience,idImage=0;
         v.setNome(readTree.get("name").asText());
-        v.setDemo(false);
+        v.setDemo(0);
          idViaggio=this.espDao.saveViaggio(v);
          idExperience=this.saveExperience(idViaggio, detail);
         idImage=this.saveImage(file, idExperience, detail);
@@ -254,7 +254,7 @@ EsperienzaDaoInterface espDao;
         Gita g =new Gita();
         int idGita,idExperience,idImage=0;
         g.setNome(readTree.get("name").asText());
-        g.setDemo(false);
+        g.setDemo(0);
         Esperienza e = new Esperienza();
         SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault());
 		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -297,8 +297,8 @@ EsperienzaDaoInterface espDao;
 		 Immagine i = new Immagine();
 		ObjectMapper objectMapper = new ObjectMapper();
         JsonNode readTree = objectMapper.readTree(detail);
-        i.setMainImage(readTree.get("viaggioCopertina").asInt()==0?false:true);
-        i.setVertical(readTree.get("isVertical").asInt()==0?false:true);
+        i.setMainImage(readTree.get("viaggioCopertina").asInt());
+        i.setVertical(readTree.get("isVertical").asInt());
 		byte[] bytes = file.getBytes();
 	       Path path = Paths.get(this.pathFile + file.getOriginalFilename());
 	       Files.write(path, bytes);
@@ -308,7 +308,7 @@ EsperienzaDaoInterface espDao;
 	     i.setPathImage(file.getOriginalFilename());
 	     boolean b=readTree.get("esperienzaCopertina").asInt()==1?true:false;
 	    System.out.println("test  "+b);
-	     i.setExperienceImage(readTree.get("esperienzaCopertina").asInt()==1?true:false);
+	     i.setExperienceImage(readTree.get("esperienzaCopertina").asInt());
 	    
 	     
 		return this.espDao.saveImmagine(i);
@@ -356,18 +356,18 @@ EsperienzaDaoInterface espDao;
         Esperienza e=this.espDao.getEsperienzaFromId(readTree.get("idEsperienza").asInt());
         Gita g=e.getGita();
         Viaggio v=e.getViaggio();
-        if(g!=null && g.getDemo()) {
-        g.setDemo(false);
+        if(g!=null && g.getDemo()==1) {
+        g.setDemo(0);
         this.espDao.updateGita(g);
         }
-        else if(v!=null && v.getDemo()) {
-        	v.setDemo(false);
+        else if(v!=null && v.getDemo()==1) {
+        	v.setDemo(0);
         	this.espDao.updateViaggio(v);
         }
         else
         	System.out.println("non è un caso demo");
         i.setPathImage(file.getOriginalFilename());
-        i.setVertical(readTree.get("vertical").asBoolean());
+        i.setVertical(readTree.get("vertical").asInt());
         return i;
 	}
 	
@@ -456,11 +456,11 @@ EsperienzaDaoInterface espDao;
 		 Immagine i = new Immagine();
 		ObjectMapper objectMapper = new ObjectMapper();
 	       JsonNode readTree = objectMapper.readTree(detail);
-	       i.setMainImage(readTree.get("viaggioCopertina").asInt()==0?false:true);
-	        i.setVertical(readTree.get("isVertical").asInt()==0?false:true);
+	       i.setMainImage(readTree.get("viaggioCopertina").asInt());
+	        i.setVertical(readTree.get("isVertical").asInt());
 	        i.setEspImm(e);
 	        i.setPathImage(file.getOriginalFilename());
-		    i.setExperienceImage(false);
+		    i.setExperienceImage(0);
 		    byte[] bytes = file.getBytes();
 		       Path path = Paths.get(this.pathFile + file.getOriginalFilename());
 		       Files.write(path, bytes);
@@ -509,11 +509,11 @@ EsperienzaDaoInterface espDao;
 		// TODO Auto-generated method stub
 		int idOldMainImage=this.mappingViaggiMainDtoOut(this.espDao.immagineOfTravelWhereMainIsTrue(name)).get(0).getId();
 		Immagine toChange=this.espDao.getImageFromId(idOldMainImage);
-		toChange.setMainImage(false);
+		toChange.setMainImage(0);
 		this.espDao.updateImmagine(toChange);
 		int idNewMainImage=this.mappingViaggiMainDtoOut(this.espDao.allCopertinaImageOfExperience(nameEsp)).get(0).getId();
 		Immagine newMainImage=this.espDao.getImageFromId(idNewMainImage);
-		newMainImage.setMainImage(true);
+		newMainImage.setMainImage(1);
 		this.espDao.updateImmagine(newMainImage);
 		return this.retrieveAllMainImage();
 	}
@@ -608,10 +608,10 @@ EsperienzaDaoInterface espDao;
 		ObjectMapper objectMapper = new ObjectMapper();
 	       JsonNode readTree = objectMapper.readTree(detail);
 		i.setEspImm(this.espDao.getEsperienzaFromId(readTree.get("idExperience").asInt()));
-		i.setVertical(readTree.get("vertical").asBoolean());
+		i.setVertical(readTree.get("vertical").asInt());
 		i.setPathImage(file.getOriginalFilename());
-		i.setMainImage(false);
-		i.setExperienceImage(false);
+		i.setMainImage(0);
+		i.setExperienceImage(0);
 		byte[] bytes = file.getBytes();
 	    Path path = Paths.get(this.pathFile + file.getOriginalFilename());
 	    Files.write(path, bytes);
@@ -630,7 +630,7 @@ EsperienzaDaoInterface espDao;
 	@Transactional
 	public void resetMainImageOfTravel(int id) {
 		Immagine i=this.espDao.getImageFromId(id);
-		i.setMainImage(true);
+		i.setMainImage(1);
 		this.espDao.updateImmagine(i);
 		// TODO Auto-generated method stub
 		

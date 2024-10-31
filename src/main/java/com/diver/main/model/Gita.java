@@ -2,13 +2,13 @@ package com.diver.main.model;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -30,7 +30,7 @@ public class Gita {
 	private LocalDateTime startDate;
 	@UpdateTimestamp
 	private LocalDateTime lastUpdate;
-	private Boolean demo;
+	private Integer demo;
 	public Integer getId() {
 		return id;
 	}
@@ -49,10 +49,10 @@ public class Gita {
 	public void setExperience(Esperienza experience) {
 		this.esperienze = experience;
 	}
-	public Boolean getDemo() {
+	public Integer getDemo() {
 		return demo;
 	}
-	public void setDemo(Boolean demo) {
+	public void setDemo(Integer demo) {
 		this.demo = demo;
 	}
 	@Override

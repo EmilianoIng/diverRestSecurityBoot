@@ -2,14 +2,14 @@ package com.diver.main.model;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -20,10 +20,10 @@ public class Immagine {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	private Boolean isVertical;
+	private Integer isVertical;
 	private String pathImage;
-	private Boolean mainImage;
-	private Boolean experienceImage;
+	private Integer mainImage;
+	private Integer experienceImage;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="id_esp")
 	Esperienza espImm;
@@ -37,10 +37,10 @@ public class Immagine {
 	public void setId(Integer id) {
 		this.id = id;
 	}
-	public Boolean isVertical() {
+	public Integer isVertical() {
 		return isVertical;
 	}
-	public void setVertical(Boolean isVertical) {
+	public void setVertical(Integer isVertical) {
 		this.isVertical = isVertical;
 	}
 	public String getPathImage() {
@@ -49,16 +49,16 @@ public class Immagine {
 	public void setPathImage(String pathImage) {
 		this.pathImage = pathImage;
 	}
-	public Boolean isMainImage() {
+	public Integer isMainImage() {
 		return mainImage;
 	}
-	public void setMainImage(Boolean mainImage) {
+	public void setMainImage(Integer mainImage) {
 		this.mainImage = mainImage;
 	}
-	public Boolean isExperienceImage() {
+	public Integer isExperienceImage() {
 		return experienceImage;
 	}
-	public void setExperienceImage(Boolean experienceImage) {
+	public void setExperienceImage(Integer experienceImage) {
 		this.experienceImage = experienceImage;
 	}
 	public Esperienza getEspImm() {
