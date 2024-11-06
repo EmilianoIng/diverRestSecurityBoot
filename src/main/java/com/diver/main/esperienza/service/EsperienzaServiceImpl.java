@@ -18,6 +18,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +49,9 @@ public class EsperienzaServiceImpl implements EsperienzaServiceInterface {
 	
 @Autowired
 EsperienzaDaoInterface espDao;
+
+@Value("${diver.path.image}")
+private String pathImage;
 	
 	/*recuperoinformazioni dei video associate alle esperienze di gite o di viaggi*/
 	@Override
@@ -225,7 +229,7 @@ EsperienzaDaoInterface espDao;
 			Video v= this.createVideoEntityToSave(e, vIn, file);
 		  
 		  byte[] bytes = file.getBytes();
-          Path path = Paths.get(this.pathFile + file.getOriginalFilename());
+          Path path = Paths.get(this.pathImage + file.getOriginalFilename());
           Files.write(path, bytes);
           return this.espDao.saveVideo(v);
 	
@@ -300,7 +304,7 @@ EsperienzaDaoInterface espDao;
         i.setMainImage(readTree.get("viaggioCopertina").asInt());
         i.setVertical(readTree.get("isVertical").asInt());
 		byte[] bytes = file.getBytes();
-	       Path path = Paths.get(this.pathFile + file.getOriginalFilename());
+	       Path path = Paths.get(this.pathImage + file.getOriginalFilename());
 	       Files.write(path, bytes);
 	      
 	       Esperienza e=this.espDao.retrieveEsperienzaFromId(idExperience);
@@ -320,10 +324,10 @@ EsperienzaDaoInterface espDao;
 		// TODO Auto-generated method stub
 		Video v=this.retrieveVideoFromVideoDtoJson(detail);
 		byte[] bytes = file.getBytes();
-        Path path = Paths.get(this.pathFile + file.getOriginalFilename());
+        Path path = Paths.get(this.pathImage + file.getOriginalFilename());
         Files.write(path, bytes);
 		String oldFileToDelete =v.getThumbnail();
-		Path pathToDelete = Paths.get(this.pathFile+oldFileToDelete);
+		Path pathToDelete = Paths.get(this.pathImage+oldFileToDelete);
 		if(Files.deleteIfExists(pathToDelete))
 		v.setThumbnail(file.getOriginalFilename());
 		else
@@ -340,7 +344,7 @@ EsperienzaDaoInterface espDao;
 		Immagine i=this.retrieveMainExperienceImage(file, detail);
 		
 		 byte[] bytes = file.getBytes();
-	       Path path = Paths.get(this.pathFile + file.getOriginalFilename());
+	       Path path = Paths.get(this.pathImage + file.getOriginalFilename());
 	       Files.write(path, bytes);
 		 this.espDao.updateImmagine(i);
 		
@@ -351,7 +355,7 @@ EsperienzaDaoInterface espDao;
         JsonNode readTree = objectMapper.readTree(detail);
         Immagine i= this.espDao.getImageFromId(readTree.get("id").asInt());
         String oldFileToDelete=i.getPathImage();
-        Path pathToDelete = Paths.get(this.pathFile+oldFileToDelete);
+        Path pathToDelete = Paths.get(this.pathImage+oldFileToDelete);
     	Files.deleteIfExists(pathToDelete);
         Esperienza e=this.espDao.getEsperienzaFromId(readTree.get("idEsperienza").asInt());
         Gita g=e.getGita();
@@ -397,8 +401,8 @@ EsperienzaDaoInterface espDao;
 	@Override
 	public byte[] getImage(String name) throws IOException {
 		// TODO Auto-generated method stub
-		System.out.println("percorso file: "+this.pathFile+name);
-		Path path = Paths.get(this.pathFile+name);		
+		System.out.println("percorso file: "+this.pathImage+name);
+		Path path = Paths.get(this.pathImage+name);		
 		FileSystemResource fIn=new FileSystemResource(path);
 		InputStream in =fIn.getInputStream();
 		System.out.println("input "+in);
@@ -413,7 +417,7 @@ EsperienzaDaoInterface espDao;
 	@Override
 	public boolean deleteVideo(int id) throws IOException {
 		String nameOfFile=this.espDao.removeVideo(id);
-		Path path = Paths.get(this.pathFile+nameOfFile);
+		Path path = Paths.get(this.pathImage+nameOfFile);
 		
 		return Files.deleteIfExists(path);
 	}
@@ -462,7 +466,7 @@ EsperienzaDaoInterface espDao;
 	        i.setPathImage(file.getOriginalFilename());
 		    i.setExperienceImage(0);
 		    byte[] bytes = file.getBytes();
-		       Path path = Paths.get(this.pathFile + file.getOriginalFilename());
+		       Path path = Paths.get(this.pathImage + file.getOriginalFilename());
 		       Files.write(path, bytes);
 		    return this.espDao.saveImmagine(i);
 	}
@@ -536,7 +540,7 @@ EsperienzaDaoInterface espDao;
 		// TODO Auto-generated method stub
 		
 		Immagine i=this.espDao.getImageFromId(id);
-		Path path = Paths.get(this.pathFile+i.getPathImage());
+		Path path = Paths.get(this.pathImage+i.getPathImage());
 		boolean op=Files.deleteIfExists(path);
 		this.espDao.removeImmagine(id);
 		return op;
@@ -547,9 +551,9 @@ EsperienzaDaoInterface espDao;
 	public boolean deleteViaggio(int idViaggio) throws IOException {
 		// TODO Auto-generated method stub
 		EntityToDelete e=this.mappingEntityToDelete(this.espDao.retrieveIdEntitytoDeleteByIdTravel(idViaggio));
-		for(String pathFile:e.getPathImmToDelete())
+		for(String pathImage:e.getPathImmToDelete())
 		{
-			Path path = Paths.get(this.pathFile+pathFile);
+			Path path = Paths.get(this.pathImage+pathImage);
 			Files.deleteIfExists(path);
 		}
 		for(Integer immImage:e.getIdImmToDelete())
@@ -613,7 +617,7 @@ EsperienzaDaoInterface espDao;
 		i.setMainImage(0);
 		i.setExperienceImage(0);
 		byte[] bytes = file.getBytes();
-	    Path path = Paths.get(this.pathFile + file.getOriginalFilename());
+	    Path path = Paths.get(this.pathImage + file.getOriginalFilename());
 	    Files.write(path, bytes);
 		return this.espDao.saveImmagine(i);
 	}
@@ -671,7 +675,7 @@ EsperienzaDaoInterface espDao;
 			this.espDao.removeImmagine(idImm);
 		}
 		for(String path:pathsImmToDelete) {
-			Path pathToDelete = Paths.get(this.pathFile+path);
+			Path pathToDelete = Paths.get(this.pathImage+path);
 			Files.deleteIfExists(pathToDelete);
 		}
 		System.out.println("idGita "+idGita);
