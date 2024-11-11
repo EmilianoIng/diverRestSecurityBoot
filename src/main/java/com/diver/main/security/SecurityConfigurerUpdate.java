@@ -44,7 +44,7 @@ public class SecurityConfigurerUpdate {
                 .requestMatchers(
                     "/login", "/diver/logout", "/user", "/registrationConfirm", "/register", "/diver/user_login",
                     "/diver/user", "/diver/register", "/diver/loginCustom", "/diver", "/submitted", "/loginCustom",
-                    "/v2/*", "/swagger-ui/**"
+                    "/v3/api-docs/**","/swagger-ui/**", "/swagger-ui.html"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
