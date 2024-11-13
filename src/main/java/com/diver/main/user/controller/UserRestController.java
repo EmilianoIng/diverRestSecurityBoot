@@ -8,7 +8,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -17,34 +17,31 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.WebRequest;
+
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.diver.main.exception.UserAlredyExist;
 import com.diver.main.exception.UserNotFoundException;
 import com.diver.main.security.CustomAuthenticationProvider;
 import com.diver.main.security.model.CambioPwdDtoInput;
-import com.diver.main.security.model.DettagliAnagrafici;
 import com.diver.main.security.model.DettagliAnagraficiDtoInput;
 import com.diver.main.security.model.OnRegistrationCompleteEvent;
 import com.diver.main.security.model.User;
-import com.diver.main.security.model.VerificationToken;
+
 import com.diver.main.user.service.UserServiceInterface;
 import com.diver.main.utility.Utility;
-import com.fasterxml.jackson.annotation.JsonAlias;
+
 
 import java.net.URI;
-import java.security.Principal;
-import java.util.Calendar;
-import java.util.Date;
 
-import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.web.bind.annotation.RequestMethod;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.servlet.http.HttpServletRequest;
+
+
+
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+
 
 @RestController
 @RequestMapping(path = "/diver")

@@ -3,7 +3,7 @@ package com.diver.main.security.model;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 
 import org.springframework.format.annotation.DateTimeFormat;
 

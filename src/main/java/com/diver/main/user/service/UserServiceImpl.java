@@ -1,12 +1,10 @@
 package com.diver.main.user.service;
 
 import java.util.Calendar;
-import java.util.List;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +14,6 @@ import com.diver.main.security.model.CambioPwdDtoInput;
 import com.diver.main.security.model.DettagliAnagrafici;
 import com.diver.main.security.model.DettagliAnagraficiDtoInput;
 import com.diver.main.security.model.User;
-import com.diver.main.security.model.UserDetailsImpl;
 import com.diver.main.security.model.VerificationToken;
 import com.diver.main.user.repository.AnagraficaDaoInterface;
 import com.diver.main.user.repository.TokenDaoInterface;

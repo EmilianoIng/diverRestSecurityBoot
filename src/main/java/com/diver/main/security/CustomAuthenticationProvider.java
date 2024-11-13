@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 import com.diver.main.exception.UserNotFoundException;
 import com.diver.main.security.model.User;
 import com.diver.main.security.model.Role;
-import com.diver.main.service.SecurityInterface;
+
 import com.diver.main.user.service.UserServiceInterface;
 
 @Component
