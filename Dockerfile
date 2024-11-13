@@ -1,4 +1,4 @@
-# Usa l'immagine di base OpenJDK 17 con Alpine per una build leggera
+# Usa l'immagine di base OpenJDK 17 con Alpine per una build leggera 
 FROM openjdk:17-jdk-alpine
 
 ENV DIVER_PATH_IMAGE=/app/resources/
@@ -12,7 +12,11 @@ RUN addgroup -S spring && adduser -S spring -G spring
 # Copia il file JAR costruito nel container e lo rinomina in app.jar
 COPY ${JAR_FILE} app.jar
 
-#COPY C:\nativescript\diverbck\imageBackend /app/resources
+# Crea la directory per il volume
+RUN mkdir -p /app/resources
+
+
+
 # Imposta l'utente per eseguire l'applicazione come non-root
 USER spring:spring
 
