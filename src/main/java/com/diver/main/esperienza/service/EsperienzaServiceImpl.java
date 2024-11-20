@@ -12,9 +12,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.diver.main.esperienza.repository.EsperienzaDaoInterface;
+import com.diver.main.esperienza.repository.EsperienzaJpaInterface;
+import com.diver.main.esperienza.repository.NewmaintravelimageInterface;
+import com.diver.main.exception.EntityNoFoundException;
+import com.diver.main.gita.repository.GitaRepoJpaInterface;
+import com.diver.main.immagine.repository.ImmagineJpaInterface;
+import com.diver.main.mapper.ImmaginiMapper;
+import com.diver.main.mapper.VideoMapper;
 import com.diver.main.model.Esperienza;
 import com.diver.main.model.Gita;
 import com.diver.main.model.Immagine;
@@ -33,22 +42,57 @@ import com.diver.main.model.dto.EntityToDelete;
 import com.diver.main.model.dto.EspDtoOut;
 import com.diver.main.model.dto.EsperienzaDtoInput;
 import com.diver.main.model.dto.ExperienceDetailsDtoOut;
+import com.diver.main.model.dto.ExperienceOfTravelDTOInterface;
+import com.diver.main.model.dto.GitaFromExperienceInterface;
+import com.diver.main.model.dto.GiteInnerEsperienceDTOInterface;
 import com.diver.main.model.dto.ImmDtoOut;
 import com.diver.main.model.dto.NewsOfExperienceDtoOut;
+import com.diver.main.model.dto.ViaggiDeleteDTOInterface;
+import com.diver.main.model.dto.VideoDTOInterface;
 import com.diver.main.model.dto.NewsExperienceDtoOut;
 import com.diver.main.model.dto.VideoDtoInput;
 import com.diver.main.model.dto.VideoDtoOut;
+import com.diver.main.model.view.Newmaintravelimage;
+import com.diver.main.viaggi.repository.ViaggiJpaInterface;
 import com.diver.main.video.model.Video;
+import com.diver.main.video.repository.VideoJpaInterface;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class EsperienzaServiceImpl implements EsperienzaServiceInterface {
 	
 @Autowired
 EsperienzaDaoInterface espDao;
+
+@Autowired
+EsperienzaJpaInterface espJpa;
+
+@Autowired
+VideoMapper videoMapper;
+
+@Autowired
+ImmaginiMapper immaginiMapper;
+
+@Autowired
+VideoJpaInterface videoJpa;
+
+@Autowired
+ImmagineJpaInterface immagineJpa;
+
+@Autowired
+ViaggiJpaInterface vJpaRepo;
+
+@Autowired
+NewmaintravelimageInterface newMainImageJpaRepo;
+
+@Autowired
+GitaRepoJpaInterface gitaJpaRepo;
+
 
 @Value("${diver.path.image}")
 private String pathImage;
@@ -57,34 +101,55 @@ private String pathImage;
 	@Override
 	public List<VideoDtoOut> retrieveAllEsperienzeWithVideoDetail() {
 		// TODO Auto-generated method stub
-		
-		return this.mappingVideoDtoOut(espDao.viaggiGiteInnerEsperienzeInnerVideo());
+
+		return espJpa.viaggiGiteInnerEsperienzeInnerVideo().stream().map(e->videoMapper.toVideoDtoOut(e)).collect(Collectors.toList());
 	}
 	
-	private List<VideoDtoOut> mappingVideoDtoOut(List<Object[]> list) {
+	private List<VideoDtoOut> mappingVideoDtoOut(List<VideoDTOInterface> list) {
 		List <VideoDtoOut> outVideo=new ArrayList<>();
-		for(Object[] result:list) {
+		for(VideoDTOInterface result:list) {
 			VideoDtoOut video=new VideoDtoOut();
-			video.setNomeGitaViaggio((String)result[0]);
-			video.setNome((String)result[3]);
-			video.setThumbnail((String)result[4]);
-			video.setYouTubeId((String)result[5]);
-			video.setDescrizioneVideo((String)result[2]);
-			video.setId((Integer)result[6]);
-			video.setDemo((Byte)result[7]==0?false:true);
-			System.out.println(" dimensione result "+result.length+" viaggio nome "+result[0]+" esperienza nome "+result[1]+" video nome"+result[2]+" video thumbnail "+result[3]+" video youtube "+result[4]+" video descrizione "+result[5]+" video demo "+result[7]);
+			video.setNomeGitaViaggio(result.getNome_viaggio());
+			video.setNome(result.getNome_esperienza());
+			video.setThumbnail(result.getThumbnail());
+			video.setYouTubeId(result.getYoutube_id());
+			video.setDescrizioneVideo(result.getDescrizione());
+			video.setId(result.getId());
+			video.setDemo(result.getDemo()==0?false:true);
+//			System.out.println(" dimensione result "+result.length+" viaggio nome "+result[0]+" esperienza nome "+result[1]+" video nome"+result[2]+" video thumbnail "+result[3]+" video youtube "+result[4]+" video descrizione "+result[5]+" video demo "+result[7]);
 		    outVideo.add(video);
 		}
 		
 		System.out.println("outVideo "+outVideo);
 		return outVideo;
 	}
+	
+//	private List<VideoDtoOut> mappingVideoDtoOutOld(List<Object[]> list) {
+//		List <VideoDtoOut> outVideo=new ArrayList<>();
+//		for(Object[] result:list) {
+//			VideoDtoOut video=new VideoDtoOut();
+//			video.setNomeGitaViaggio((String)result[0]);
+//			video.setNome((String)result[3]);
+//			video.setThumbnail((String)result[4]);
+//			video.setYouTubeId((String)result[5]);
+//			video.setDescrizioneVideo((String)result[2]);
+//			video.setId((Integer)result[6]);
+//			video.setDemo((Byte)result[7]==0?false:true);
+//			System.out.println(" dimensione result "+result.length+" viaggio nome "+result[0]+" esperienza nome "+result[1]+" video nome"+result[2]+" video thumbnail "+result[3]+" video youtube "+result[4]+" video descrizione "+result[5]+" video demo "+result[7]);
+//		    outVideo.add(video);
+//		}
+//		
+//		System.out.println("outVideo "+outVideo);
+//		return outVideo;
+//	}
 
 	@Override
 	public List<ImmDtoOut> retrieveAllMainImage() {
 		// TODO Auto-generated method stub
-		List<ImmDtoOut> list=new ArrayList<>();
-		list=this.mappingViaggiMainDtoOut(espDao.immaginiWhereMainIsTrue());
+//		List<ImmDtoOut> list=new ArrayList<>();
+		List<ImmDtoOut> list=this.espJpa.immaginiWhereMainIsTrue().stream()				
+				.map(i->immaginiMapper.toVideoDtoOut(i)).collect(Collectors.toList());
+//		list=this.mappingViaggiMainDtoOut(espDao.immaginiWhereMainIsTrue());
 		return  this.addNewTravelImageToMainResut(list);
 		
 	}
@@ -92,12 +157,13 @@ private String pathImage;
 	@Override
 	public List<ImmDtoOut> retrieveAllMainExperienceImageOfTravel(String name) {
 		// TODO Auto-generated method stub
-		List<ImmDtoOut> list=new ArrayList<>();
-		list=this.mappingViaggiMainDtoOut(this.espDao.allMainExperienceImageOfTravel(name));
+//		List<ImmDtoOut> list=new ArrayList<>();
+//		list=this.mappingViaggiMainDtoOut(this.espDao.allMainExperienceImageOfTravel(name));
+		List<ImmDtoOut> list=this.espJpa.allMainExperienceImageOfTravel(name).stream().map(i->immaginiMapper.toVideoDtoOut(i)).collect(Collectors.toList());
 		ImmDtoOut nVisit=new ImmDtoOut();
 		nVisit.setNameViaggioGita("New Visit");
 		nVisit.setPathImage("~/assets/images/newVisit.jpg");
-		nVisit.setDemo(true);
+		nVisit.setIsDemo(true);
 		list.add(nVisit);
 		return  list;
 	}
@@ -106,26 +172,58 @@ private String pathImage;
 	@Override
 	public List<ExperienceDetailsDtoOut> retrieveAllExperienceImageOfTravel(Integer id,String tipo) throws IOException {
 		// TODO Auto-generated method stub
-		List<ExperienceDetailsDtoOut> list=new ArrayList<>();
-	    list=this.mappingExperienceDtoOut(this.espDao.retrieveAllImageOfExperienceById(id,tipo));
-	    for(ExperienceDetailsDtoOut e:list)
-	    	if(!e.getPathImage().startsWith("~"))
-	    		e.setPicByte(this.getImage(e.getPathImage()));
+//		List<ExperienceDetailsDtoOut> list=new ArrayList<>();
+//	    list=this.mappingExperienceDtoOut(this.espDao.retrieveAllImageOfExperienceById(id,tipo));
+		
+		List<ExperienceDetailsDtoOut> list =
+				tipo.equals("Viaggio")?
+				(this.espJpa.retrieveAllImageOfExperienceById(id).stream()
+			    .map(i -> {
+			        ExperienceDetailsDtoOut dto = this.immaginiMapper.toAnyExperienceImmDtoOut(i);
+			        if (!dto.getPathImage().startsWith("~")) {
+			            try {
+							dto.setPicByte(this.getImage(dto.getPathImage()));
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+			        }
+			        return dto;
+			    })
+			    .collect(Collectors.toList())):
+			    	(this.espJpa.retrieveAllImageOfTripExperienceById(id).stream()
+			    	.peek(elem->System.out.println("elem: id "+elem.getIdImmagine()+" elem: experienceImage "+elem.getExperienceImage()))
+				    .map(i -> {
+				        ExperienceDetailsDtoOut dto = this.immaginiMapper.toAnyExperienceImmDtoOut(i);
+				        if (!dto.getPathImage().startsWith("~")) {
+				            try {
+								dto.setPicByte(this.getImage(dto.getPathImage()));
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+				        }
+				        return dto;
+				    })
+				    .collect(Collectors.toList())) ;
+
+
 		return  list;
 	}
 
 	
 	private List<ImmDtoOut> addNewTravelImageToMainResut(List<ImmDtoOut> list){
 		
-		Immagine i=this.espDao.retrieveNewTravelImage();
+//		Immagine i=this.espDao.retrieveNewTravelImage();
+		Immagine i=this.immagineJpa.findById(1).get();
 		ImmDtoOut immOut=new ImmDtoOut();
 		immOut.setId(i.getId());
 		immOut.setNameViaggioGita("New Travel");
 		immOut.setNameEsperienza("New Travel");
 		immOut.setPathImage(i.getPathImage());
-		immOut.setVertical(i.isVertical()==1?true:false);
-		immOut.setMainImage(i.isMainImage()==1?true:false);
-		immOut.setDemo(true);
+		immOut.setIsVertical(i.isVertical()==1?true:false);
+		immOut.setIsMainImage(i.isMainImage()==1?true:false);
+		immOut.setIsDemo(true);
 		
 		list.add(0,immOut);
 		System.out.println("Lista delle immagini di copertina finale: "+list);
@@ -140,10 +238,10 @@ private String pathImage;
 			imm.setNameEsperienza((String)result[1]);
 			imm.setPathImage((String)result[2]);
 			imm.setId((Integer)result[3]);
-			imm.setMainImage((Integer)result[4]==1?true:false);
-			imm.setVertical((Integer)result[5]==1?true:false);
-			imm.setExperienceImage((Integer)result[6]==1?true:false);
-			imm.setDemo((Integer)result[7]==1?true:false);
+			imm.setIsMainImage((Integer)result[4]==1?true:false);
+			imm.setIsVertical((Integer)result[5]==1?true:false);
+			imm.setIsExperienceImage((Integer)result[6]==1?true:false);
+			imm.setIsDemo((Integer)result[7]==1?true:false);
 			imm.setIdViaggio((Integer)result[8]);
 			imm.setIdEsperienza((Integer)result[9]);
 			System.out.println(" dimensione result "+result.length+" viaggio nome "+result[0]+" esperienza nome "+result[1]+" video nome"+result[2]+" video thumbnail "+result[3]+" video youtube "+result[4]+" video descrizione "+result[5]+" ExperienceImage "+result[6]);
@@ -199,31 +297,39 @@ private String pathImage;
 
 	@Override
 	public List<EspDtoOut> retrieveAllExperience() {
-		// TODO Auto-generated method stub
-		List <String> list=this.espDao.allExperienceWithViaggioGitaDetail();
-		List<EspDtoOut> result=new ArrayList<>();
-		for(String s:list)
-		{
+	return	this.espJpa.allExperienceWithViaggioGitaDetail().stream().map(s->{
 			EspDtoOut o=new EspDtoOut();
-			o.setNomeViaggioGita( s);
-			result.add(o);
-		}
-		return result;
+			o.setNomeViaggioGita(s);
+			return o;
+		}).collect(Collectors.toList());
+//		List <String> list=this.espDao.allExperienceWithViaggioGitaDetail();
+//		List<EspDtoOut> result=new ArrayList<>();
+//		for(String s:list)
+//		{
+//			EspDtoOut o=new EspDtoOut();
+//			o.setNomeViaggioGita( s);
+//			result.add(o);
+//		}
+//		return result;
 	}
 
 	@Override
 	public Integer saveVideo(MultipartFile file, String detail) throws IOException {
 		// TODO Auto-generated method stub
 		ObjectMapper objectMapper = new ObjectMapper();
-	
+		List<GiteInnerEsperienceDTOInterface> giteInnerJoinExperienceList=null;
 			VideoDtoInput vIn=objectMapper.readValue(detail, VideoDtoInput.class);
 			System.out.println("video recuperato: "+vIn);//video recuperato: VideoDtoInput [name=Ponza, videoId=rycgjh, specificPlace=Cala Dell'acqua, descrizione=Fuivhkh]
 		  //Esperienza e=  this.espDao.retrieveEsperienzaFromId(retrieveVideoOrGitaId(vIn.getName()));
-		List <Object[]> l= this.espDao.viaggiInnerJoinExperienceWhereviaggioNome(vIn.getName());
+		List<ExperienceOfTravelDTOInterface> l= this.vJpaRepo.viaggiInnerJoinExperienceWhereviaggioNome(vIn.getName());
 		Esperienza e=new Esperienza() ;
-		if(l==null || l.size()==0)
-			l=this.espDao.giteInnerJoinExperienceWheregitaNome(vIn.getName());
-			e=this.espDao.retrieveEsperienzaFromId((Integer)l.get(0)[1]);
+		if(l==null || l.size()==0) 
+			 giteInnerJoinExperienceList = this.gitaJpaRepo.giteInnerJoinExperienceWheregitaNome(vIn.getName());
+		
+			e=this.espJpa.findById((l==null || l.size()==0)?
+					giteInnerJoinExperienceList.get(0).getEsperienza_id():
+						l.get(0).getEsperienza_id()
+					).get();
 		
 			
 			Video v= this.createVideoEntityToSave(e, vIn, file);
@@ -231,7 +337,7 @@ private String pathImage;
 		  byte[] bytes = file.getBytes();
           Path path = Paths.get(this.pathImage + file.getOriginalFilename());
           Files.write(path, bytes);
-          return this.espDao.saveVideo(v);
+          return this.videoJpa.save(v).getId();
 	
 		
 	}
@@ -245,7 +351,7 @@ private String pathImage;
         int idViaggio,idExperience,idImage=0;
         v.setNome(readTree.get("name").asText());
         v.setDemo(0);
-         idViaggio=this.espDao.saveViaggio(v);
+         idViaggio=this.vJpaRepo.save(v).getId();
          idExperience=this.saveExperience(idViaggio, detail);
         idImage=this.saveImage(file, idExperience, detail);
 		return  idViaggio;
@@ -266,12 +372,14 @@ private String pathImage;
         e.setNome(readTree.get("location").asText());
         e.setDescrizione(readTree.get("description").asText());
 		e.setData(d);
-		idExperience=this.espDao.saveExperience(e);
+//		idExperience=this.espDao.saveExperience(e);
+		e=this.espJpa.save(e);
 		g.setExperience(e);
-        idGita=this.espDao.saveGita(g);
-        idImage=this.saveImage(file, idExperience, detail);
+		Gita gita = this.gitaJpaRepo.save(g);
+//        idGita=this.espDao.saveGita(g);
+        idImage=this.saveImage(file, e.getId(), detail);
 		// TODO Auto-generated method stub
-		return idGita;
+		return gita.getId();
 	}
 
 	
@@ -288,10 +396,14 @@ private String pathImage;
 		e.setNome(readTree.get("location").asText());
 		e.setDescrizione(readTree.get("description").asText());
 		e.setData(d);
-		Viaggio v=this.espDao.getViaggioFromId(idViaggio);
+		Optional<Viaggio> byId = this.vJpaRepo.findById(idViaggio);
+		if(byId.isEmpty())
+			throw new EntityNoFoundException("Viaggio non trovato");
+			
+		Viaggio v=byId.get();
 		e.setViaggio(v);
 		 
-		return this.espDao.saveExperience(e);
+		return this.espJpa.save(e).getId();
 	} 
 	
 	@Override
@@ -306,16 +418,19 @@ private String pathImage;
 		byte[] bytes = file.getBytes();
 	       Path path = Paths.get(this.pathImage + file.getOriginalFilename());
 	       Files.write(path, bytes);
-	      
-	       Esperienza e=this.espDao.retrieveEsperienzaFromId(idExperience);
+	      Optional<Esperienza> byId = this.espJpa.findById(idExperience);
+	      if(byId.isEmpty()) 
+	    	  throw new EntityNoFoundException("esperienza non presente!!");
+  
+    	  Esperienza e=byId.get();
+//	       Esperienza e=this.espDao.retrieveEsperienzaFromId(idExperience);
 	     i.setEspImm(e);
 	     i.setPathImage(file.getOriginalFilename());
 	     boolean b=readTree.get("esperienzaCopertina").asInt()==1?true:false;
 	    System.out.println("test  "+b);
 	     i.setExperienceImage(readTree.get("esperienzaCopertina").asInt());
-	    
-	     
-		return this.espDao.saveImmagine(i);
+//		return this.espDao.saveImmagine(i);
+	      return this.immagineJpa.save(i).getId();
 	}
 	
 	@Override
@@ -332,7 +447,7 @@ private String pathImage;
 		v.setThumbnail(file.getOriginalFilename());
 		else
 			v.setThumbnail(oldFileToDelete);
-		this.espDao.updateVideo(v);
+		this.videoJpa.save(v);
 		
 	}
 
@@ -357,16 +472,21 @@ private String pathImage;
         String oldFileToDelete=i.getPathImage();
         Path pathToDelete = Paths.get(this.pathImage+oldFileToDelete);
     	Files.deleteIfExists(pathToDelete);
-        Esperienza e=this.espDao.getEsperienzaFromId(readTree.get("idEsperienza").asInt());
+    	Optional<Esperienza> byId = this.espJpa.findById(readTree.get("idEsperienza").asInt());
+    	if(byId.isEmpty())
+    		throw new EntityNoFoundException("Esperienza non trovata");
+    	Esperienza e = byId.get();
+//        Esperienza e=this.espDao.getEsperienzaFromId(readTree.get("idEsperienza").asInt());
         Gita g=e.getGita();
         Viaggio v=e.getViaggio();
         if(g!=null && g.getDemo()==1) {
         g.setDemo(0);
-        this.espDao.updateGita(g);
+//        this.espDao.updateGita(g);
+        this.gitaJpaRepo.save(g);
         }
         else if(v!=null && v.getDemo()==1) {
         	v.setDemo(0);
-        	this.espDao.updateViaggio(v);
+        	this.vJpaRepo.save(v);
         }
         else
         	System.out.println("non è un caso demo");
@@ -378,7 +498,8 @@ private String pathImage;
 	private Video retrieveVideoFromVideoDtoJson(String json) throws JsonMappingException, JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();
         JsonNode readTree = objectMapper.readTree(json);
-        Video v=this.espDao.getVideoFromId(readTree.get("id").asInt());
+//        Video v=this.espDao.getVideoFromId(readTree.get("id").asInt());
+        Video v=this.videoJpa.findById(readTree.get("id").asInt()).get();
         v.setId(readTree.get("id").asInt());
         v.setDescrizione(readTree.get("descrizione").asText());
         v.setYoutube(readTree.get("videoId").asText());
@@ -416,25 +537,36 @@ private String pathImage;
 
 	@Override
 	public boolean deleteVideo(int id) throws IOException {
-		String nameOfFile=this.espDao.removeVideo(id);
-		Path path = Paths.get(this.pathImage+nameOfFile);
-		
+		Optional<Video> byId = this.videoJpa.findById(id);
+		if(byId.isPresent())
+		{this.videoJpa.delete(byId.get());
+//		String nameOfFile=this.espDao.removeVideo(id);
+		String nameOfFile=byId.get().getNome();
+		Path path = Paths.get(this.pathImage+nameOfFile);		
 		return Files.deleteIfExists(path);
+		
+		}
+		return false;
 	}
 
 	@Override
 	public VideoDtoOut getVideoById(int id) {
 		// TODO Auto-generated method stub
-		return this.mappingVideoDtoOut(espDao.viaggioGitaInnerEsperienzeInnerVideoId(id)).get(0);
+		return espJpa.viaggioGitaInnerEsperienzeInnerVideoId(id).stream().map(e->videoMapper.toVideoDtoOut(e)).collect(Collectors.toList()).get(0);
 	}
 
 	@Override
 	@Transactional
 	public void updateVideoWithoutImage(int id, VideoDtoInput vIn) {
 		// TODO Auto-generated method stub
-		Video v=this.espDao.getVideoFromId(id);
+		Video v=null;
+		Optional<Video> byId = this.videoJpa.findById(id);
+		if(byId.isEmpty())
+			throw new EntityNotFoundException("Video non trovato");
+	    v=byId.get();
+//		Video v=this.espDao.getVideoFromId(id);
 		v=this.updateRacord(v, vIn);
-		this.espDao.updateVideo(v);
+		this.videoJpa.save(v);
 		
 	}
 	
@@ -450,7 +582,8 @@ private String pathImage;
 		// TODO Auto-generated method stub
 		ObjectMapper objectMapper = new ObjectMapper();
         JsonNode readTree = objectMapper.readTree(detail);
-		return this.espDao.getEsperienzaByName(readTree.get("location").asText());
+        return this.espJpa.findByNome(readTree.get("location").asText() ).get(0);
+//		return this.espDao.getEsperienzaByName(readTree.get("location").asText());
 	}
 
 	@Override
@@ -468,7 +601,7 @@ private String pathImage;
 		    byte[] bytes = file.getBytes();
 		       Path path = Paths.get(this.pathImage + file.getOriginalFilename());
 		       Files.write(path, bytes);
-		    return this.espDao.saveImmagine(i);
+		    return this.immagineJpa.save(i).getId();
 	}
 	
 	private List<String> mappingNameOfTravel(List <Object[]> l){
@@ -485,25 +618,38 @@ private String pathImage;
 	@Transactional
 	public List<String> retrieveAllExperienceOfTravel(String name) {
 		// TODO Auto-generated method stub
-		List <Object[]> l= this.espDao.viaggiInnerJoinExperienceWhereviaggioNome(name);
-		return this.mappingNameOfTravel(l);
+//		List <Object[]> l= this.espDao.viaggiInnerJoinExperienceWhereviaggioNome(name);
+//		return this.mappingNameOfTravel(l);
+	return	this.vJpaRepo.viaggiInnerJoinExperienceWhereviaggioNome(name).stream().map(e->e.getNome_esperienza()).collect(Collectors.toList());
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	@Transactional
 	public Esperienza addExperienceOfTravel(String detail) throws JsonMappingException, JsonProcessingException {
 		// TODO Auto-generated method stub
 		ObjectMapper objectMapper = new ObjectMapper();
 	       JsonNode readTree = objectMapper.readTree(detail);
-	       Date d=new Date(readTree.get("data").asText());
-		Viaggio v=this.espDao.getViaggioFromName(readTree.get("name").asText());
+	       String testData = readTree.get("data").asText();
+	        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+	        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+	        Date d=new Date();
+			try {
+				d = sdf.parse(testData);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	       Viaggio v= this.vJpaRepo.findByNome(readTree.get("name").asText()).get(0) ;  
+//		Viaggio v=this.espDao.getViaggioFromName(readTree.get("name").asText());
 		Esperienza e=new Esperienza();
 		e.setNome(readTree.get("location").asText());
 		e.setDescrizione(readTree.get("description").asText());
 		e.setData(d);
 		e.setViaggio(v);
-		this.espDao.saveExperience(e);
-		return e;
+//		e.setId(espJpa.save(e).getId());
+//		this.espDao.saveExperience(e);
+		return espJpa.save(e);
 	}
 
 
@@ -511,26 +657,38 @@ private String pathImage;
 	@Transactional
 	public List<ImmDtoOut> modifyMainImageOfTravel(String name,String nameEsp) {
 		// TODO Auto-generated method stub
-		int idOldMainImage=this.mappingViaggiMainDtoOut(this.espDao.immagineOfTravelWhereMainIsTrue(name)).get(0).getId();
-		Immagine toChange=this.espDao.getImageFromId(idOldMainImage);
-		toChange.setMainImage(0);
-		this.espDao.updateImmagine(toChange);
-		int idNewMainImage=this.mappingViaggiMainDtoOut(this.espDao.allCopertinaImageOfExperience(nameEsp)).get(0).getId();
-		Immagine newMainImage=this.espDao.getImageFromId(idNewMainImage);
-		newMainImage.setMainImage(1);
-		this.espDao.updateImmagine(newMainImage);
+		Newmaintravelimage oldMainImage = this.newMainImageJpaRepo.findByMainImageAndNomeViaggio(1,name);
+		
+		Newmaintravelimage newMainImage = this.newMainImageJpaRepo.findByNomeEsperienzaAndExperienceImage(nameEsp, 1);
+		Optional<Immagine> old = this.immagineJpa.findById(oldMainImage.getIdImmagine());
+		old.get().setMainImage(0);
+		this.immagineJpa.save(old.get());
+		Optional<Immagine> newImage = this.immagineJpa.findById(newMainImage.getIdImmagine());
+		newImage.get().setMainImage(1);
+		this.immagineJpa.save(newImage.get());
+		//		int idOldMainImage=this.mappingViaggiMainDtoOut(this.espDao.immagineOfTravelWhereMainIsTrue(name)).get(0).getId();
+//		Immagine toChange=this.espDao.getImageFromId(idOldMainImage);
+//		toChange.setMainImage(0);
+//		this.espDao.updateImmagine(toChange);
+//		int idNewMainImage=this.mappingViaggiMainDtoOut(this.espDao.allCopertinaImageOfExperience(nameEsp)).get(0).getId();
+//		Immagine newMainImage=this.espDao.getImageFromId(idNewMainImage);
+//		newMainImage.setMainImage(1);
+//		this.espDao.updateImmagine(newMainImage);
 		return this.retrieveAllMainImage();
+//		return null;
 	}
 
 	@Override
 	@Transactional
 	public List<ImmDtoOut> modifyNameOfTravel(String oldname, String newName) {
 		// TODO Auto-generated method stub
-		Viaggio v=this.espDao.getViaggioFromName(oldname);
+//		Viaggio v=this.espDao.getViaggioFromName(oldname);
+		Viaggio v = this.vJpaRepo.findByNome(oldname).get(0);
 		v.setNome(newName);
-		this.espDao.updateViaggio(v);
+		this.vJpaRepo.save(v);
 		List<ImmDtoOut> list=new ArrayList<>();
-		list=this.mappingViaggiMainDtoOut(espDao.immaginiWhereMainIsTrue());
+		list= this.espJpa.immaginiWhereMainIsTrue().stream().map(i->this.immaginiMapper.toVideoDtoOut(i)).collect(Collectors.toList());
+//		list=this.mappingViaggiMainDtoOut(espDao.immaginiWhereMainIsTrue());
 		return  this.addNewTravelImageToMainResut(list);
 	}
 	
@@ -538,11 +696,15 @@ private String pathImage;
 	@Transactional
 	public boolean deleteImmagine(int id) throws IOException {
 		// TODO Auto-generated method stub
-		
-		Immagine i=this.espDao.getImageFromId(id);
-		Path path = Paths.get(this.pathImage+i.getPathImage());
-		boolean op=Files.deleteIfExists(path);
-		this.espDao.removeImmagine(id);
+		boolean op=false;
+		Optional<Immagine> byId = this.immagineJpa.findById(id);
+		if(byId.isPresent()) {
+		this.immagineJpa.deleteById(id);
+//		Immagine i=this.espDao.getImageFromId(id);
+		Path path = Paths.get(this.pathImage+byId.get().getPathImage());
+		 op=Files.deleteIfExists(path);
+//		this.espDao.removeImmagine(id);
+		}
 		return op;
 	}
 
@@ -550,29 +712,32 @@ private String pathImage;
 	@Transactional
 	public boolean deleteViaggio(int idViaggio) throws IOException {
 		// TODO Auto-generated method stub
-		EntityToDelete e=this.mappingEntityToDelete(this.espDao.retrieveIdEntitytoDeleteByIdTravel(idViaggio));
+		EntityToDelete e=this.mappingEntityToDelete(this.espJpa.retrieveIdEntitytoDeleteByIdTravel(idViaggio));
 		for(String pathImage:e.getPathImmToDelete())
 		{
 			Path path = Paths.get(this.pathImage+pathImage);
 			Files.deleteIfExists(path);
 		}
 		for(Integer immImage:e.getIdImmToDelete())
-			this.espDao.removeImmagine(immImage);
+			this.immagineJpa.deleteById(immImage);
+//			this.espDao.removeImmagine(immImage);
 		for(Integer idExp:e.getIdEsperienzeToDelete())
-			this.espDao.removeExperience(idExp);
-		this.espDao.removeViaggio(idViaggio);
+			this.espJpa.deleteById(idExp);
+//			this.espDao.removeExperience(idExp);
+//		this.espDao.removeViaggio(idViaggio);
+		this.vJpaRepo.deleteById(idViaggio);
 		return true;
 	}
 
 
-	private EntityToDelete mappingEntityToDelete(List<Object[]> list) {
+	private EntityToDelete mappingEntityToDelete(List<ViaggiDeleteDTOInterface> list) {
 		List<Integer> idListImmagini=new ArrayList<>();
 		Set<Integer> idListEsperienze=new TreeSet<>();
 		List<String> pathImmToDelete=new ArrayList<>();
-		for(Object[] result:list) {
-			idListImmagini.add((Integer)result[1]);
-			idListEsperienze.add((Integer)result[0]);
-			pathImmToDelete.add((String)result[2]);
+		for(ViaggiDeleteDTOInterface result:list) {
+			idListImmagini.add(result.getId_immagine());
+			idListEsperienze.add(result.getId_esperienza());
+			pathImmToDelete.add(result.getPathImage());
 
 		}
 		EntityToDelete e=new EntityToDelete(idListImmagini,idListEsperienze,pathImmToDelete);
@@ -584,13 +749,17 @@ private String pathImage;
 	@Transactional
 	public void updateExperienceWithoutImage(int id, EsperienzaDtoInput exIn) {
 		// TODO Auto-generated method stub
-		Esperienza e=this.espDao.getEsperienzaFromId(id);
+//		Esperienza e=this.espDao.getEsperienzaFromId(id);
+		Optional<Esperienza> byId = this.espJpa.findById(id);
+		if(byId.isEmpty())
+			throw new EntityNotFoundException("Esperienza non trovata");
+			Esperienza e = byId.get();
 		if(!e.getDescrizione().equals(exIn.getDescrizione().trim()) || !e.getNome().equals(exIn.getNameEsperienza().trim()) || e.getData().compareTo(exIn.getData())!=0) {
 		e.setDescrizione(exIn.getDescrizione().trim());
 		e.setNome(exIn.getNameEsperienza().trim());
 		e.setData(exIn.getData());
 		System.out.println("modifica esperienza");
-		this.espDao.updateEsperienza(e);
+		this.espJpa.save(e);
 		}
 		System.out.println("NameGita "+exIn.getNameGita()+" gita "+e.getGita());
 		Gita gEsperienza=e.getGita();
@@ -598,7 +767,7 @@ private String pathImage;
 			{
 			System.out.println("modifica gita");
 			gEsperienza.setNome(exIn.getNameGita().trim());
-			this.espDao.updateGita(gEsperienza);
+			this.gitaJpaRepo.save(gEsperienza);
 			}
 		
 		
@@ -611,7 +780,11 @@ private String pathImage;
 		Immagine i= new Immagine();
 		ObjectMapper objectMapper = new ObjectMapper();
 	       JsonNode readTree = objectMapper.readTree(detail);
-		i.setEspImm(this.espDao.getEsperienzaFromId(readTree.get("idExperience").asInt()));
+	       Optional<Esperienza> byId = this.espJpa.findById(readTree.get("idExperience").asInt());
+	       if(byId.isEmpty())
+	    	   throw new EntityNotFoundException("Entity non trovata");
+//	    i.setEspImm(this.espDao.getEsperienzaFromId(readTree.get("idExperience").asInt()));
+	    i.setEspImm(byId.get());
 		i.setVertical(readTree.get("vertical").asInt());
 		i.setPathImage(file.getOriginalFilename());
 		i.setMainImage(0);
@@ -619,23 +792,30 @@ private String pathImage;
 		byte[] bytes = file.getBytes();
 	    Path path = Paths.get(this.pathImage + file.getOriginalFilename());
 	    Files.write(path, bytes);
-		return this.espDao.saveImmagine(i);
+//		return this.espDao.saveImmagine(i);
+	   return this.immagineJpa.save(i).getId();
+	   
 	}
 
 	@Override
 	@Transactional
 	public boolean deleteExperience(int id) throws IOException {
 		// TODO Auto-generated method stub
-		this.espDao.removeExperience(id);
+		this.espJpa.deleteById(id);
 		return true;
 	}
 
 	@Override
 	@Transactional
 	public void resetMainImageOfTravel(int id) {
-		Immagine i=this.espDao.getImageFromId(id);
-		i.setMainImage(1);
-		this.espDao.updateImmagine(i);
+//		Immagine i=this.espDao.getImageFromId(id);
+//		i.setMainImage(1);
+//		this.espDao.updateImmagine(i);
+		Optional<Immagine> byId = this.immagineJpa.findById(id);
+		if(byId.isEmpty())
+			throw new EntityNotFoundException();
+		byId.get().setMainImage(1);
+		this.immagineJpa.save(byId.get());
 		// TODO Auto-generated method stub
 		
 	}
@@ -643,17 +823,18 @@ private String pathImage;
 	@Override
 	public List<ExperienceDetailsDtoOut> retrieveAllTripsImage() throws IOException {
 		// TODO Auto-generated method stub
-		List<Object[]> listObjectResult = this.espDao.immaginiGiteWhereExperienceImageIsTrue();
+//		List<Object[]> listObjectResult = this.espDao.immaginiGiteWhereExperienceImageIsTrue();
+		List<ExperienceDetailsDtoOut> listObjectResult =this.espJpa.immaginiGiteWhereExperienceImageIsTrue().stream().map(e->this.immaginiMapper.toExperienceImmDtoOut(e)).collect(Collectors.toList());
 		ExperienceDetailsDtoOut nVisit=new ExperienceDetailsDtoOut();
 		nVisit.setNameEsperienza("New Excursion");
 		nVisit.setPathImage("~/assets/images/newTrip.jpg");
 		nVisit.setDemo(true);
-		List<ExperienceDetailsDtoOut> immMapped = this.mappingGiteMainExperienceDtoOut(listObjectResult);
-		immMapped.add(nVisit);
-		for(ExperienceDetailsDtoOut e:immMapped)
+//		List<ExperienceDetailsDtoOut> immMapped = this.mappingGiteMainExperienceDtoOut(listObjectResult);
+		listObjectResult.add(nVisit);
+		for(ExperienceDetailsDtoOut e:listObjectResult)
 	    	if(!e.isDemo())
 	    		e.setPicByte(this.getImage(e.getPathImage()));
-		return immMapped;
+		return listObjectResult;
 	}
 	
     @Transactional
@@ -663,44 +844,62 @@ private String pathImage;
 		int idGita=0;
 		List<Integer> idImmToDelete=new ArrayList<Integer>();
 		List<String> pathsImmToDelete=new ArrayList<String>();
-		List<Object[]> listObjectResult =this.espDao.getGitaFromIdExperience(id);
-		for(Object[] result:listObjectResult) {
-			
-		idGita=(Integer)result[0];
-		idImmToDelete.add((Integer)result[1]);
-		pathsImmToDelete.add((String)result[2]);
+//		List<Object[]> listObjectResult =this.espDao.getGitaFromIdExperience(id);
+		List<GitaFromExperienceInterface> gitaFromIdExperience = this.espJpa.getGitaFromIdExperience(id);
+		idImmToDelete = gitaFromIdExperience.stream()
+			    .map(GitaFromExperienceInterface::getId_imm)
+			    .toList();
 
-		}
+		pathsImmToDelete = gitaFromIdExperience.stream()
+			    .map(GitaFromExperienceInterface::getPathImage)
+			    .toList();
+
+			// Ottieni l'ultimo `idGita` se la lista non è vuota
+			if (!gitaFromIdExperience.isEmpty()) {
+			    idGita = gitaFromIdExperience.get(gitaFromIdExperience.size() - 1).getId_gita();
+			}
+
+		//		for(Object[] result:listObjectResult) {
+//			
+//		idGita=(Integer)result[0];
+//		idImmToDelete.add((Integer)result[1]);
+//		pathsImmToDelete.add((String)result[2]);
+//
+//		}
 		for(int idImm:idImmToDelete) {
-			this.espDao.removeImmagine(idImm);
+			this.immagineJpa.deleteById(idImm);
 		}
 		for(String path:pathsImmToDelete) {
 			Path pathToDelete = Paths.get(this.pathImage+path);
 			Files.deleteIfExists(pathToDelete);
 		}
-		System.out.println("idGita "+idGita);
-		this.espDao.removeExperience(id);
-		this.espDao.removeGita(idGita);
+		this.espJpa.deleteById(id);
+		this.gitaJpaRepo.deleteById(idGita);
+//		this.espDao.removeGita(idGita);
+//		System.out.println("idGita "+idGita);
+//		this.espDao.removeExperience(id);
+//		this.espDao.removeGita(idGita);
 		return true;
 	}
 
 	@Override
 	public List<VideoDtoOut> getVideoByExperienceId(int id) {
 		// TODO Auto-generated method stub
-		List<Video> list = this.espDao.getVideoFromExperienceId(id);
-		List<VideoDtoOut> listOut=new ArrayList<VideoDtoOut>();
-		for(Video v:list)
-		{
-			VideoDtoOut vOut= new VideoDtoOut();
-			vOut.setDemo(v.isDemo());
-			vOut.setDescrizioneVideo(v.getDescrizione());
-			vOut.setNome(v.getNome());
-			vOut.setThumbnail(v.getThumbnail());
-			vOut.setYouTubeId(v.getYoutube());
-			vOut.setId(v.getId());
-			listOut.add(vOut);
-		}
-		return listOut;
+		List<Video> list = this.videoJpa.getVideoFromExperienceId(id);
+		return list.stream().map(v->this.videoMapper.fromVideoToVideoDtoOut(v)).collect(Collectors.toList());
+//		List<VideoDtoOut> listOut=new ArrayList<VideoDtoOut>();
+//		for(Video v:list)
+//		{
+//			VideoDtoOut vOut= new VideoDtoOut();
+//			vOut.setDemo(v.isDemo());
+//			vOut.setDescrizioneVideo(v.getDescrizione());
+//			vOut.setNome(v.getNome());
+//			vOut.setThumbnail(v.getThumbnail());
+//			vOut.setYouTubeId(v.getYoutube());
+//			vOut.setId(v.getId());
+//			listOut.add(vOut);
+//		}
+//		return listOut;
 	}
 
 	@Override
@@ -775,21 +974,6 @@ private String pathImage;
 
 	
 
-	
 
-	
-	
-
-	
-	
-	
-	/*private Integer retrieveVideoOrGitaId(String nome) {
-		Integer id=null;
-		 id=this.espDao.retrieveIdViaggio(nome);
-		 if(id!=null)
-			 return this.espDao.retrieveIdEsperienza(id);
-		 else
-			 return this.espDao.retrieveIdGita(nome);
-	}*/
 
 }

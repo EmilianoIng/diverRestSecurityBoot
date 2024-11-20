@@ -37,28 +37,28 @@ public class ImmDtoOut {
 	public void setNameEsperienza(String nameEsperienza) {
 		this.nameEsperienza = nameEsperienza;
 	}
-	public boolean isVertical() {
+	public boolean getIsVertical() {
 		return isVertical;
 	}
-	public void setVertical(boolean isVertical) {
+	public void setIsVertical(boolean isVertical) {
 		this.isVertical = isVertical;
 	}
-	public boolean isMainImage() {
+	public boolean getIsMainImage() {
 		return isMainImage;
 	}
-	public void setMainImage(boolean isMainImage) {
+	public void setIsMainImage(boolean isMainImage) {
 		this.isMainImage = isMainImage;
 	}
-	public boolean isExperienceImage() {
+	public boolean getIsExperienceImage() {
 		return isExperienceImage;
 	}
-	public void setExperienceImage(boolean isExperienceImage) {
+	public void setIsExperienceImage(boolean isExperienceImage) {
 		this.isExperienceImage = isExperienceImage;
 	}
-	public boolean isDemo() {
+	public boolean getIsDemo() {
 		return isDemo;
 	}
-	public void setDemo(boolean isDemo) {
+	public void setIsDemo(boolean isDemo) {
 		this.isDemo = isDemo;
 	}
 	public Integer getIdViaggio() {

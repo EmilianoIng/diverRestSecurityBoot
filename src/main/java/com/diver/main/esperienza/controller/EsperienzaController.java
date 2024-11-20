@@ -159,7 +159,8 @@ public class EsperienzaController {
 
 		return this.espService.retrieveAllExperience();
 	}
-
+// inutilizzata
+	
 	@GetMapping(value = "/esperienze/{travel}")
 	@RolesAllowed({ "User", "Admin" })
 
@@ -206,6 +207,7 @@ System.out.println("dettaglio esp "+detail);
 		this.espService.updateVideoAndImage(file, detail);
 
 	}
+//	ricominciare da qui
 	@PatchMapping(value = "/esperienza/immagine")
 	@RolesAllowed({ "User", "Admin" })
 	public void updateEsperienzaMainImage(@RequestPart("imageFile") MultipartFile file, @RequestPart("detail") String detail) throws JsonMappingException, JsonProcessingException, IOException {

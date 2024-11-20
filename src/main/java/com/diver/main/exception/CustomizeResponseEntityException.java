@@ -39,4 +39,12 @@ public final ResponseEntity<Object> handleAllException(PasswordAlredyResetExcept
 			return new ResponseEntity<>(exG, HttpStatus.CONFLICT);
 }
 
+@ExceptionHandler(EntityNoFoundException.class)
+
+public final ResponseEntity<Object> handleAllException(EntityNoFoundException ex, WebRequest request) {
+	// TODO Auto-generated method stub
+	ExceptionGeneric exG=new ExceptionGeneric(new Date(), ex.getMessage(), request.getDescription(false));
+			return new ResponseEntity<>(exG, HttpStatus.NOT_FOUND);
+}
+
 }

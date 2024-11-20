@@ -2,6 +2,8 @@ package com.diver.main.model.dto;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class ExperienceDetailsDtoOut {
 	
 	private Integer id;
