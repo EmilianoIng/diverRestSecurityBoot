@@ -4,26 +4,26 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToOne;
-import javax.persistence.PreRemove;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PreRemove;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Where;
 
-import javax.persistence.GeneratedValue;
+import jakarta.persistence.GeneratedValue;
 
 @Entity
 @Table(name="user",uniqueConstraints = {@UniqueConstraint(columnNames = {"username"})})
@@ -35,7 +35,7 @@ import javax.persistence.GeneratedValue;
 @Where(clause="is_deleted=false")
 public class User implements Serializable {
 	@Id
-	@GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY )
+	@GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY )
     private int id;
 	@Column(name = "username",unique = true)
 	private String username;

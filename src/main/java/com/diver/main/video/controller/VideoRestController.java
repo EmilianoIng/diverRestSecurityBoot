@@ -2,7 +2,7 @@ package com.diver.main.video.controller;
 
 import java.util.List;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 
 import org.springframework.beans.factory.annotation.Autowired;
 

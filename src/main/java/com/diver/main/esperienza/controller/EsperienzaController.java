@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.text.ParseException;
 import java.util.List;
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -159,7 +159,8 @@ public class EsperienzaController {
 
 		return this.espService.retrieveAllExperience();
 	}
-
+// inutilizzata
+	
 	@GetMapping(value = "/esperienze/{travel}")
 	@RolesAllowed({ "User", "Admin" })
 
@@ -206,6 +207,7 @@ System.out.println("dettaglio esp "+detail);
 		this.espService.updateVideoAndImage(file, detail);
 
 	}
+//	ricominciare da qui
 	@PatchMapping(value = "/esperienza/immagine")
 	@RolesAllowed({ "User", "Admin" })
 	public void updateEsperienzaMainImage(@RequestPart("imageFile") MultipartFile file, @RequestPart("detail") String detail) throws JsonMappingException, JsonProcessingException, IOException {

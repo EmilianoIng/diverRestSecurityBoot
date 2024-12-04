@@ -2,9 +2,9 @@ package com.diver.main.esperienza.repository;
 
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.transaction.Transactional;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -83,7 +83,7 @@ public class EsperienzaDaoImpl implements EsperienzaDaoInterface {
 	public List<Object[]> allMainExperienceImageOfTravel(String name) {
 		// TODO Auto-generated method stub
 		Query q = em.createQuery(
-				"SELECT t.nome AS nome_viaggio , e.nome  AS nome_esperienza, i.pathImage, i.id AS id_immagine, i.mainImage, i.isVertical,i.experienceImage,t.demo,t.id AS id_viaggio,e.id AS id_experience FROM Viaggio t JOIN t.esperienze e JOIN e.immagini i where t.nome=?1 and i.experienceImage=true");
+				"SELECT t.nome AS nome_viaggio , e.nome  AS nome_esperienza, i.pathImage, i.id AS id_immagine, i.mainImage, i.isVertical,i.experienceImage,t.demo,t.id AS id_viaggio,e.id AS id_experience FROM Viaggio t JOIN t.esperienze e JOIN e.immagini i where t.nome=?1 and i.experienceImage=1");
 		q.setParameter(1, name);
 		List<Object[]> list = q.getResultList();
 		for (Object[] result : list) {

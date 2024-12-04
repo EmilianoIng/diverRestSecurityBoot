@@ -1,20 +1,21 @@
 package com.diver.main.security.model;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-public class Role {
+public class Role implements Serializable {
 	
 	@Id
-	@GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY )
+	@GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY )
 	private Integer id;
 	private String name;
 	@JsonIgnore
