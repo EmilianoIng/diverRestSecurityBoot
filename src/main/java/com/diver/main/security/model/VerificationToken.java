@@ -1,5 +1,6 @@
 package com.diver.main.security.model;
 
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -21,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 	@NamedQuery(name="VerificationToken.findByToken",query="select v from VerificationToken v where v.token=?1 ")
 	
 })
-public class VerificationToken {
+public class VerificationToken implements Serializable{
 
 	private static final int EXPIRATION = 60 * 24;
 

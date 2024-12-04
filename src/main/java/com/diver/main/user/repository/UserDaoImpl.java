@@ -32,7 +32,7 @@ public class UserDaoImpl implements UserDaoInterface {
 	@Transactional
 	public User findByUsername(String email) {
 		// TODO Auto-generated method stub
-		User result = new User();
+		User result=null;
 		Query q = em.createNamedQuery("User.findByUsername");
 		q.setParameter(1, email);
 		try {
@@ -40,7 +40,7 @@ public class UserDaoImpl implements UserDaoInterface {
 		} catch (NoResultException ex) {
 			
 			//new UserNotFoundException(ex.getMessage());
-		return	result=null;
+		return	result;
 		}
 		System.out.println("query effettuata: "+result);
 		return result;
